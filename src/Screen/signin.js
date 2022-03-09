@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { StyleSheet, TextInput ,View,TouchableOpacity,Text,Modal} from 'react-native';
+import axios from 'axios';
 import Registration from './registration'
+
 const SingIn = ({navigation}) =>{
     const [currentUser,setCurentUser]= useState("")
     const [values, setValues] = React.useState({ email: '', password: '' });
@@ -12,44 +14,26 @@ const SingIn = ({navigation}) =>{
         [name]: value,
       });
     };
-  
-   
-   const onSubmit =() => {
 
-      
-       fetch('/sessions',{
-            method:"POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body:JSON.stringify(values),
-        }).then((res)=>{
-            console.log("res",res)
-            if(res.ok){
-                res.json.then((user)=>{
-                  ()=>navigation.navigate("Dashboard");
-                    setCurentUser(user);
-                    
-                });
-            }else{
-                res.jeson().then((error)=>{
-                    // console.error(errors);
-                    console.log("error",error)
-                })
-                }
-            });
-      // axios.post('/sesstions', {
-      //    email:values.email,
-      //    password: values.password
-      // })
-      // .then(response => { 
-      //    console.log(response)
-      // })
-      // .catch(error => {
-      //     console.log(error.response)
-      // });
+   const onSubmit =() => {
+      axios.post('http://localhost:3000/sessions', {login:{
+         email:values.email,
+         password: values.password
+      }},
+      { withCredentials: true }
+      )
+      .then(res => { 
+        if(res.status === 200){
+           navigation.navigate("Dashboard")
+           setCurentUser(res.config.data)
+         //   console.log(res)
+        }
+            
+      })
+      .catch(error => {
+          console.log('error',error)
+      });
         };
-       
 
       return (
          <View style={styles.container}>
@@ -58,6 +42,7 @@ const SingIn = ({navigation}) =>{
                   placeholder = "Email"
                   placeholderTextColor = "#9a73ef"
                   autoCapitalize = "none"
+                  keyboardTyp="default"
                   onChangeText={(text) => handleChange('email', text)}
                   value={values.email}
                   />
@@ -68,6 +53,7 @@ const SingIn = ({navigation}) =>{
                   placeholderTextColor = "#9a73ef"
                   onChangeText={(text) => handleChange('password', text)}
                   value={values.password}
+                  autoCapitalize = "none"
                   />
             <View style={styles.buttons}>
                <TouchableOpacity
@@ -81,12 +67,6 @@ const SingIn = ({navigation}) =>{
                   onPress={() => navigation.navigate("Create an account")}
                 >
                   <Text style={styles.submitButtonText}>SignUp</Text>
-             </TouchableOpacity>
-             <TouchableOpacity
-                  style={[styles.submitButton]}
-                  onPress={() => navigation.navigate("Dashboard")}
-                >
-                  <Text style={styles.submitButtonText}>Dashboard</Text>
              </TouchableOpacity>
             </View>
                

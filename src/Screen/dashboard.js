@@ -1,8 +1,11 @@
-import React, { Component ,useState} from "react";
+import React, { useEffect ,useState} from "react";
 import axios from "axios";
+import _ from 'lodash'
 import { StyleSheet, TextInput ,View,TouchableOpacity,Text, Modal,Button, FlatList} from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import { Card } from 'react-native-paper';
+import LogOut from "./logout";
+import Items from "./items";
 
 // import Constants from 'expo-constants';
 
@@ -11,32 +14,45 @@ import { Card } from 'react-native-paper';
 
 // or any pure javascript modules available in npm
 // import { Card } from 'react-native-paper';v
-const data = [
-  { id: 1, txt: 'first check', isChecked: false },
-  { id: 2, txt: 'second check', isChecked: false },
-  { id: 3, txt: 'third check', isChecked: false },
-  { id: 4, txt: 'fourth check', isChecked: false },
-];
+ const ListStors = ({navigation}) => {
+  const [storeLists, setStoreList] = useState([]);
+  const [text, setText] = useState('');
+  const[filterdStore,SetFilterdStore] = useState([])
 
-export default App = ({navigation}) => {
-  const [products, setProducts] = useState(data);
 
-  const handleChange = (id) => {
-    let temp = products.map((product) => {
-      if (id === product.id) {
-        return { ...product, isChecked: !product.isChecked };
-      }
-      return product;
-    });
-    setProducts(temp);
-  };
+  useEffect(() => {
+    axios.get('http://localhost:3000/stores')
+        .then(response => {
+          const storeArray = response.data.map((store,index) =>({
+            id:store.id,
+            name:store.name,
+            isChecked:false,
+            Miles:5
+          }))
+          setStoreList(storeArray)
+        })
+  },[]);
 
-  let selected = products.filter((product) => product.isChecked);
-  console.log("prodaucts", selected)
-  const renderFlatList = (renderData) => {
-    return (
-      <FlatList
-        data={renderData}
+  const onSearch = ()=>{ 
+const filterdstores1 = _.filter(storeLists, (store) => store.Miles <= text);
+setStoreList(filterdstores1);
+};
+ 
+ const handleChange = (id) => {
+  let temp = storeLists.map((storeList) => {
+    if (id === storeList.id) {
+      return { ...storeList, isChecked: !storeList.isChecked };
+    }
+    return storeList;
+  });
+  setStoreList(temp);
+};
+
+// const storesRendered = filterdStore && filterdStore.length ? filterdStore :storeLists;
+  let selected = storeLists.filter((storeList) => storeList.isChecked);
+  
+  const renderFlatList =  (<FlatList
+        data={storeLists}
         renderItem={({ item }) => (
           <Card style={{ margin: 5 }}>
             <View style={styles.card}>
@@ -52,32 +68,35 @@ export default App = ({navigation}) => {
                     handleChange(item.id);
                   }}
                 />
-                <Text>{item.txt}</Text>
+                <Text>{item.name}</Text>
               </View>
               </View>
           </Card>
         )}
-      />
-    );
-  };
+      />)
+  
+ 
 
   return (
     <View style={styles.container}>
        <View style={styles.searchbar}>
-       <TextInput style = {styles.input}
-                  underlineColorAndroid = "transparent"
-                  placeholder = "search neer by Srore"
-                  placeholderTextColor = "#9a73ef"
-                  autoCapitalize = "none"
-                  // onChangeText={(text) => handleChange('email', text)}
-                  // value={values.email}
-                  />
-     <Button title="Search" ></Button>
-     </View>
-      <View style={{ flex: 1 }}>{renderFlatList(products)}</View>
-      <TouchableOpacity  onPress={() => navigation.navigate("Items")} selected={selected}>
-      <Text>Add </Text>
-      </TouchableOpacity>
+        <TextInput 
+            style = {styles.input}
+            underlineColorAndroid = "transparent"
+            placeholder = "search neer by Srore"
+            placeholderTextColor = "#9a73ef"
+            autoCapitalize = "none"
+            onChangeText={newText => setText(newText)}
+            defaultValue={text}
+          />
+          <Button title="Search" onPress={()=>onSearch()}></Button>
+          </View>
+            <View style={{ flex: 1 }}>{renderFlatList}</View>
+            <Button title ="Add" style={styles.addButtones} selected={selected} onPress={() => navigation.navigate("Items",{selected:selected})}/>
+            {/* <TouchableOpacity   selected={selected}>
+            <Text>LogOut</Text>
+            </TouchableOpacity> */}
+            {/* <LogOut/> */}
 
       {/* <View style={{ flex: 1 }}>{renderFlatList(selected)}</View> */}
  
@@ -123,7 +142,11 @@ const styles = StyleSheet.create({
   },
   searchbar:{
     borderColor:'red',
-    flexDirection: 'row'
+    flexDirection: 'row',
+   justifyContent:'center',
+  },
+  addButtones:{
+    color:'green'
   }
 });
-
+export default ListStors;

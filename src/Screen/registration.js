@@ -27,7 +27,7 @@ const Registration = ({navigation}) => {
             { withCredentials: true }
           )
           .then(response => {
-              console.log("status",response.data.status)
+              console.log("status",response)
             if (response.data.status === "created") {
               console.log("Registration data", response.data)
             }
